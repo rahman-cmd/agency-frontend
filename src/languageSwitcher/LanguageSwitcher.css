@@ -1,0 +1,148 @@
+/* LanguageSwitcher.css */
+/* Responsive adjustments and enhancements */
+
+/* Mobile-first responsive design */
+@media (max-width: 480px) {
+  .language-switcher-pip {
+    right: 10px !important;
+    bottom: 10px !important;
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    margin: 0 !important;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 481px) and (max-width: 768px) {
+  .language-switcher-pip {
+    max-width: 400px !important;
+    right: 20px !important;
+    bottom: 20px !important;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 769px) {
+  .language-switcher-pip {
+    max-width: 350px !important;
+  }
+}
+
+/* Scrollbar styling for language list */
+.language-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.language-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.language-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.language-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Firefox scrollbar */
+.language-list {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Smooth transitions */
+.language-switcher-pip,
+.language-option,
+.lang-button,
+.edge-panel,
+.dropdown-arrow {
+  transition: all 0.3s ease !important;
+}
+
+/* Focus states for accessibility */
+.language-option:focus,
+.lang-button:focus,
+.edge-panel:focus,
+.current-language:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .language-switcher-pip {
+    border: 2px solid #000 !important;
+  }
+  
+  .language-option.selected {
+    background-color: #000 !important;
+    color: #fff !important;
+    border-color: #000 !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .language-switcher-pip,
+  .language-option,
+  .lang-button,
+  .edge-panel,
+  .dropdown-arrow,
+  .slider-highlight {
+    transition: none !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .language-switcher-pip {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+  }
+  
+  .language-header {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+  }
+  
+  .current-language:hover {
+    background-color: #334155 !important;
+  }
+  
+  .language-name {
+    color: #f1f5f9 !important;
+  }
+  
+  .language-option:hover {
+    background-color: #334155 !important;
+  }
+  
+  .language-option.selected {
+    background-color: #1e40af !important;
+    border-color: #3b82f6 !important;
+  }
+  
+  .quick-switch {
+    background-color: #0f172a !important;
+  }
+  
+  .language-buttons {
+    background-color: #334155 !important;
+  }
+  
+  .slider-highlight {
+    background-color: #475569 !important;
+  }
+  
+  .lang-button {
+    color: #cbd5e1 !important;
+  }
+  
+  .lang-button.active {
+    color: #60a5fa !important;
+  }
+}
