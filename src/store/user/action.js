@@ -78,7 +78,7 @@ export const disableHost = (host) => (dispatch) => {
       Toast(
         "success",
         `${host.name} Is ${
-          host.isBlock !== true ? "disable" : "UnDisable"
+          host.isHost !== true ? "disable" : "UnDisable"
         } Successfully!`
       );
     })

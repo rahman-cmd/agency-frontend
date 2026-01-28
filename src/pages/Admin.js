@@ -34,6 +34,8 @@ import rCoin from "../assets/images/r coin 2.png";
 import leftArrow from "../assets/images/leftArrow.png";
 import { getSetting } from "../store/redeem/action.js";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
+import { baseURL, key } from "../util/Config";
 
 
  
@@ -168,6 +170,7 @@ const Admin = () => {
   const { setting } = useSelector((state) => state.redeem);
   const agencyId = localStorage.getItem("agencyId");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 720);
+  const [agencyTargets, setAgencyTargets] = useState([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 720);
@@ -180,7 +183,21 @@ const Admin = () => {
     dispatch(getAgencyTypeCommission());
     dispatch(getUser(agencyId));
     dispatch(getSetting());
+    fetchAgencyTargets();
   }, [dispatch, agencyId]);
+
+  const fetchAgencyTargets = async () => {
+    try {
+      const response = await axios.get(`${baseURL}coinTarget?type=agency`, {
+        headers: { key },
+      });
+      if (response.data.status) {
+        setAgencyTargets(response.data.coinTargets || []);
+      }
+    } catch (error) {
+      console.error("Error fetching agency targets:", error);
+    }
+  };
 
   // actions
   const handleOpenCreator = () => {
@@ -550,6 +567,14 @@ const Admin = () => {
               </div>
             </div>
 
+            {/* Agency Target Progress Bar */}
+            {agencyTargets.length > 0 && (
+              <AgencyTargetProgress 
+                currentProgress={admin?.currentHostCoin || 0}
+                targets={agencyTargets}
+              />
+            )}
+
             {/* Summary cards */}
             <SummaryCard
               iconBg={T.gradPurple2}
@@ -740,7 +765,7 @@ const HostItem = ({ u, onToggle, onHistory }) => {
       </div>
 
       <label className="switch s-icons s-outline s-outline-secondary mr-2 mb-0 margin-left">
-        <input type="checkbox" checked={!!u?.isBlock} onChange={onToggle} />
+        <input type="checkbox" checked={!!u?.isHost} onChange={onToggle} />
         <span className="slider round"></span>
       </label>
     </div>
@@ -928,5 +953,169 @@ const TargetGlyph = () => (
     <circle cx="12" cy="12" r="2"></circle>
   </svg>
 );
+
+// Agency Target Progress Component
+const AgencyTargetProgress = ({ currentProgress, targets }) => {
+  // Sort targets by coinTarget (ascending)
+  const sortedTargets = [...targets].sort((a, b) => (a.coinTarget || 0) - (b.coinTarget || 0));
+  
+  // Find current target (first target that is not completed)
+  const currentTargetIndex = sortedTargets.findIndex(
+    (target) => currentProgress < (target.coinTarget || 0)
+  );
+  
+  // If all targets completed, show the last one
+  const currentTarget = currentTargetIndex >= 0 
+    ? sortedTargets[currentTargetIndex]
+    : sortedTargets[sortedTargets.length - 1];
+  
+  // Calculate progress percentage
+  const progressPercent = currentTarget
+    ? Math.min((currentProgress / (currentTarget.coinTarget || 1)) * 100, 100)
+    : 100;
+  
+  // Calculate remaining coins needed
+  const remainingCoins = currentTarget
+    ? Math.max((currentTarget.coinTarget || 0) - currentProgress, 0)
+    : 0;
+  
+  // Check if current target is completed
+  const isCompleted = currentProgress >= (currentTarget?.coinTarget || 0);
+  
+  // Get next target if current is completed
+  const nextTarget = isCompleted && currentTargetIndex < sortedTargets.length - 1
+    ? sortedTargets[currentTargetIndex + 1]
+    : null;
+
+  const displayTarget = isCompleted && nextTarget ? nextTarget : currentTarget;
+  const displayProgress = isCompleted && nextTarget 
+    ? currentProgress - (currentTarget?.coinTarget || 0)
+    : currentProgress;
+  const displayProgressPercent = nextTarget && isCompleted
+    ? Math.min((displayProgress / (nextTarget.coinTarget || 1)) * 100, 100)
+    : progressPercent;
+  const displayRemaining = nextTarget && isCompleted
+    ? Math.max((nextTarget.coinTarget || 0) - displayProgress, 0)
+    : remainingCoins;
+
+  if (!displayTarget) return null;
+
+  return (
+    <div
+      style={{
+        background: T.card,
+        border: `1px solid ${T.border}`,
+        borderRadius: cardRadius,
+        boxShadow: softShadow,
+        padding: 16,
+        margin: "12px 12px",
+      }}
+    >
+      <div
+        style={{
+          fontWeight: 600,
+          fontSize: 16,
+          color: T.text,
+          marginBottom: 12,
+        }}
+      >
+        Agency Target Progress
+      </div>
+      
+      <div
+        style={{
+          marginBottom: 8,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 6,
+          }}
+        >
+          <span style={{ fontSize: 14, color: T.sub, fontWeight: 600 }}>
+            Current Target: {displayTarget.coinTarget?.toLocaleString("en-US") || 0} Coins
+          </span>
+          <span style={{ fontSize: 14, color: T.text, fontWeight: 600 }}>
+            {displayProgressPercent.toFixed(1)}%
+          </span>
+        </div>
+        
+        {/* Progress Bar */}
+        <div
+          style={{
+            width: "100%",
+            height: 24,
+            background: "rgba(255,255,255,0.1)",
+            borderRadius: 12,
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              width: `${displayProgressPercent}%`,
+              height: "100%",
+              background: isCompleted && nextTarget
+                ? "linear-gradient(90deg, #10B981, #34D399)"
+                : "linear-gradient(90deg, #6366F1, #8B5CF6)",
+              borderRadius: 12,
+              transition: "width 0.3s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              paddingRight: 8,
+            }}
+          >
+            {displayProgressPercent > 15 && (
+              <span
+                style={{
+                  fontSize: 11,
+                  color: "#fff",
+                  fontWeight: 600,
+                }}
+              >
+                {displayProgress.toLocaleString("en-US")}
+              </span>
+            )}
+          </div>
+        </div>
+        
+        {/* Remaining coins */}
+        {displayRemaining > 0 && (
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 12,
+              color: T.sub,
+              fontWeight: 600,
+            }}
+          >
+            {isCompleted && nextTarget ? "Next Target: " : "Remaining: "}
+            <span style={{ color: T.text }}>
+              {displayRemaining.toLocaleString("en-US")} coins needed
+            </span>
+          </div>
+        )}
+        
+        {/* Completed message */}
+        {isCompleted && !nextTarget && (
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 12,
+              color: "#10B981",
+              fontWeight: 600,
+            }}
+          >
+            ✅ All targets completed!
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default Admin;
